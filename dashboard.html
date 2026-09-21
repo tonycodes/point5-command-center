@@ -9,24 +9,14 @@
 <body>
 <div id="boot">Loading Point5 Command Center...</div>
 <script>
-function decodeBase64Utf8(b64) {
-  const bin = atob(String(b64 || '').replace(/\n/g, ''));
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return new TextDecoder('utf-8').decode(bytes);
-}
 (async function () {
   const boot = document.getElementById('boot');
   try {
-    const url = 'https://api.github.com/repos/tonycodes/point5-command-center/contents/app.html?ref=main&ts=' + Date.now();
+    const url = 'https://raw.githubusercontent.com/tonycodes/point5-command-center/main/app.html?ts=' + Date.now();
     const res = await fetch(url, { cache: 'no-store' });
-    const text = await res.text();
-    let html = text;
-    if (text.trim().charAt(0) === '{') {
-      const j = JSON.parse(text);
-      html = decodeBase64Utf8(j.content);
-    }
-    if (!html || html.indexOf('<html') === -1) throw new Error('empty payload');
+    if (!res.ok) throw new Error('Dashboard request failed (' + res.status + ')');
+    const html = await res.text();
+    if (!html || !/<html[\s>]/i.test(html)) throw new Error('Invalid dashboard response');
     document.open();
     document.write(html);
     document.close();
