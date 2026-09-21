@@ -12,15 +12,13 @@
 (async function () {
   const boot = document.getElementById('boot');
   try {
-    const api = 'https://api.github.com/repos/tonycodes/point5-command-center/contents/app.html?ref=main&ts=' + Date.now();
-    const data = await fetch(api, { cache: 'no-store', headers: { Accept: 'application/vnd.github.raw+json' } });
-    let html;
-    const ct = data.headers.get('content-type') || '';
-    if (ct.indexOf('json') !== -1) {
-      const j = await data.json();
+    const url = 'https://api.github.com/repos/tonycodes/point5-command-center/contents/app.html?ref=main&ts=' + Date.now();
+    const res = await fetch(url, { cache: 'no-store' });
+    const text = await res.text();
+    let html = text;
+    if (text.trim().charAt(0) === '{') {
+      const j = JSON.parse(text);
       html = atob(String(j.content || '').replace(/\n/g, ''));
-    } else {
-      html = await data.text();
     }
     if (!html || html.indexOf('<html') === -1) throw new Error('empty payload');
     document.open();
